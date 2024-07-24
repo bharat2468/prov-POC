@@ -16,7 +16,7 @@ const router = Router();
 
 router.route("/all-posts").get(verifyJWT, allPosts);
 
-router.route("/get-post/:postId").get(verifyJWT, getPost);
+router.route("/get-post/:slug").get(verifyJWT, getPost);
 
 router.route("/create").post(verifyJWT, isAdmin,upload.single('image'),createPost);
 

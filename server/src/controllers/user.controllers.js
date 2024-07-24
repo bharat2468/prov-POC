@@ -46,6 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
 	let avatarCloudUrl = null;
 	const avatarLocalPath = req?.file?.path;
 
+
 	if (avatarLocalPath) {
 		const avatarCloudObject = await uploadOnCloudinary(avatarLocalPath);
 		avatarCloudUrl = avatarCloudObject?.url;
@@ -91,17 +92,10 @@ const loginUser = asyncHandler(async (req, res) => {
 	// 5. generate access and refresh token
 	// 6. return through cookies
 
-	const { username, email, password } = req.body;
-
-	if (!username && !email) {
-		throw new ApiError(
-			400,
-			"At least one of username or email must be provided"
-		);
-	}
+	const { usernameOrEmail, password } = req.body;
 
 	const user = await User.findOne({
-		$or: [{ username }, { email }],
+		$or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
 	});
 
 	if (!user) {
@@ -193,7 +187,7 @@ const allUsers = asyncHandler(async (req, res) => {
 			},
 		},
 		{
-			$project:{
+			$project: {
 				_id: 1,
 				username: 1,
 				email: 1,
@@ -201,8 +195,8 @@ const allUsers = asyncHandler(async (req, res) => {
 				role: 1,
 				createdAt: 1,
 				updatedAt: 1,
-			}
-		}
+			},
+		},
 	]);
 
 	return res
@@ -359,7 +353,8 @@ const updateAvatar = asyncHandler(async (req, res) => {
 	// update in the database
 	// delete prev from db
 
-	const newAvatarLocalPath = req?.file?.path;
+	console.log(req.file);
+	const newAvatarLocalPath = req.file?.path;
 
 	if (!newAvatarLocalPath) {
 		throw new ApiError(400, "new Avatar file required");

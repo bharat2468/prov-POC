@@ -35,8 +35,17 @@ const registrationSchema = z.object({
 });
 
 const loginSchema = z.object({
-	username: isUsername.optional(),
-	email: isEmail.optional(),
+	usernameOrEmail: z
+		.string()
+		.min(1, "Username or Email is required")
+		.refine(
+			(value) =>
+				isUsername.safeParse(value).success ||
+				isEmail.safeParse(value).success,
+			{
+				message: "Invalid Username or Email format",
+			}
+		),
 	password: z.string().min(1, "Password is required"),
 });
 
@@ -46,7 +55,7 @@ const changePasswordSchema = z.object({
 });
 
 const updateUserSchema = z.object({
-	email: isEmail
+	email: isEmail,
 });
 
 // !Export schemas

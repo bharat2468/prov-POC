@@ -1,31 +1,28 @@
-import { useRouteError } from "react-router-dom";
+import { useRouteError, Link } from "react-router-dom";
 
 const Error = () => {
-    const err = useRouteError();
-    const { error, status, statusText } = err;
-    console.log(err);
+	const err = useRouteError();
 
-    return (
-        <div className=" min-h-screen w-screen flex justify-center items-start">
-            <div role="alert" className="m-10 alert alert-error">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="stroke-current shrink-0 h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-            >
-                <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-            </svg>
-            <span>{error?.message}<br></br> {status}:{statusText}</span>
-        </div>
-        </div>
-        
-    );
+	return (
+		<div className="flex min-h-[100dvh] flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+			<div className="mx-auto max-w-md text-center">
+				<div className="mx-auto h-12 w-12 text-primary" />
+				<h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+					Oops, something went wrong!
+				</h1>
+				<p className="mt-4">
+					We're sorry, but the page you were looking for could not be
+					found. Please check the URL or try navigating back to the
+					homepage.
+				</p>
+				<div className="mt-6">
+					<Link to="/" className="btn btn-primary" >
+						Go to Homepage
+					</Link>
+				</div>
+			</div>
+		</div>
+	);
 };
 
 export default Error;

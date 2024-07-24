@@ -1,11 +1,14 @@
 import { Router } from "express";
 import {
-    allComments, createComment, updateComment, deleteComment
+    allComments, createComment, updateComment, deleteComment,
+    getCommentsForPost
 } from "../controllers/comment.controllers.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/admin.midleware.js";
 
 const router = Router();
+
+router.route("/post/:postId").get(verifyJWT,getCommentsForPost);
 
 router.route("/all-comments").get(verifyJWT,isAdmin, allComments);
 

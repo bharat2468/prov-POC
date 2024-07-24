@@ -9,15 +9,17 @@ const app = express();
 const corsOptions = {
 	origin: process.env.ALLOWED_ORIGINS,
 	credentials: true,
+	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 };
+
 app.use(cors(corsOptions));
 
 //? cookie parser config to read cookies
 app.use(cookieParser());
 
 //? config for data recieved in the requests
-app.use(express.json({ limit: "16 kb" }));
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.json({ limit: "160kb" }));
+app.use(express.urlencoded({ extended: true, limit: "160kb" }));
 app.use(express.static("public"));
 
 // !routes import

@@ -2,12 +2,14 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Comment } from "../models/comment.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import mongoose from "mongoose";
+
 
 const allComments = asyncHandler(async (req, res) => {
 	const comments = await Comment.aggregate([
 		{
 			$sort: {
-				createdAt: -1,
+				updatedAt: -1,
 			},
 		},
 		{
@@ -50,6 +52,96 @@ const allComments = asyncHandler(async (req, res) => {
 			new ApiResponse(200, comments, "all comments fetched successfully")
 		);
 });
+
+
+const getCommentsForPost = asyncHandler(async (req, res) => {
+    const postId = req.params?.postId;
+    const userId = req.user?._id;
+    console.log(userId);
+
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 2;
+    const skip = (page - 1) * limit;
+
+    const pipeline = [
+        {
+            $match: {
+                postId: new mongoose.Types.ObjectId(postId)
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+        {
+            $unwind: "$user"
+        },
+        {
+            $lookup: {
+                from: "likes",
+                localField: "_id",
+                foreignField: "commentId",
+                as: "likes"
+            }
+        },
+        {
+            $addFields: {
+                likesCount: { $size: "$likes" },
+                isLiked: {
+                    $in: [new mongoose.Types.ObjectId(userId), "$likes.userId"]
+                }
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                content: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                likesCount: 1,
+                isLiked: 1,
+                user: {
+                    _id: "$user._id",
+                    username: "$user.username",
+                    avatar: "$user.avatar"
+                }
+            }
+        },
+        {
+            $sort: {
+                createdAt: -1
+            }
+        },
+        {
+            $skip: skip
+        },
+        {
+            $limit: limit
+        }
+    ];
+
+    const comments = await Comment.aggregate(pipeline);
+
+    // Get total count of comments for this post
+    const totalComments = await Comment.countDocuments({ postId: new mongoose.Types.ObjectId(postId) });
+
+    const totalPages = Math.ceil(totalComments / limit);
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            comments,
+            currentPage: page,
+            totalPages,
+            totalComments
+        }, "Comments fetched successfully")
+    );
+});
+
 
 const createComment = asyncHandler(async (req, res) => {
 	const { content, postId } = req.body;
@@ -123,4 +215,4 @@ const deleteComment = asyncHandler(async (req, res) => {
 		);
 });
 
-export { allComments, createComment, updateComment, deleteComment };
+export { getCommentsForPost,allComments, createComment, updateComment, deleteComment };

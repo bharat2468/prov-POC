@@ -6,10 +6,17 @@ import {
 	deleteFromCloudinary,
 	uploadOnCloudinary,
 } from "../utils/cloudinary.js";
-import mongoose from "mongoose";
+import slugify from "slugify";
 
 const allPosts = asyncHandler(async (req, res) => {
-	const posts = await Post.aggregate([
+	const pagination = req.query.pagination === "true";
+	const page = parseInt(req.query.page) || 1;
+	const limit = parseInt(req.query.limit) || 9;
+	const skip = (page - 1) * limit;
+
+	const totalPosts = await Post.countDocuments();
+
+	let pipeline = [
 		{
 			$sort: {
 				createdAt: -1,
@@ -20,23 +27,43 @@ const allPosts = asyncHandler(async (req, res) => {
 				title: 1,
 				featuredImage: 1,
 				timeToRead: 1,
+				slug: 1,
+				updatedAt:1,
 			},
 		},
-	]);
+	];
+
+	if (pagination) {
+		pipeline.push({ $skip: skip });
+		pipeline.push({ $limit: limit });
+	}
+
+	const posts = await Post.aggregate(pipeline);
+
+	const response = {
+		posts,
+		totalPosts,
+	};
+
+	if (pagination) {
+		response.currentPage = page;
+		response.totalPages = Math.ceil(totalPosts / limit);
+	}
 
 	return res
 		.status(200)
-		.json(new ApiResponse(200, posts, "all posts returned successfully"));
+		.json(new ApiResponse(200, response, "Posts returned successfully"));
 });
 
+
 const getPost = asyncHandler(async (req, res) => {
-	const postId = req.params?.postId;
+	const slug = req.params?.slug;
 
 	const pipeline = [
 		// Match the specific post by ID
 		{
 			$match: {
-				_id: new mongoose.Types.ObjectId(postId),
+				slug,
 			},
 		},
 		// Lookup likes for the post
@@ -54,59 +81,12 @@ const getPost = asyncHandler(async (req, res) => {
 				likesCount: { $size: "$postLikes" },
 			},
 		},
-		// Lookup comments for the post
-		{
-			$lookup: {
-				from: "comments",
-				localField: "_id",
-				foreignField: "postId",
-				as: "comments",
-				pipeline: [
-					// Nested lookup to get likes for each comment
-					{
-						$lookup: {
-							from: "likes",
-							localField: "_id",
-							foreignField: "commentId",
-							as: "likes",
-						},
-					},
-					// Nested lookup to get user for each comment
-					{
-						$lookup: {
-							from: "users",
-							localField: "userId",
-							foreignField: "_id",
-							as: "user",
-						},
-					},
-					// Unwind the user array (since it will always be one user)
-					{
-						$unwind: "$user",
-					},
-					// Project to shape the comment data
-					{
-						$project: {
-							_id: 1,
-							content: 1,
-							createdAt: 1,
-							updatedAt: 1,
-							likes: { $size: "$likes" },
-							user: {
-								_id: "$user._id",
-								username: "$user.username",
-								avatar: "$user.avatar",
-							},
-						},
-					},
-				],
-			},
-		},
 		// Project to shape the final post data
 		{
 			$project: {
 				_id: 1,
 				title: 1,
+				slug: 1,
 				featuredImage: 1,
 				tags: 1,
 				timeToRead: 1,
@@ -114,7 +94,6 @@ const getPost = asyncHandler(async (req, res) => {
 				createdAt: 1,
 				updatedAt: 1,
 				likesCount: 1,
-				comments: 1,
 			},
 		},
 	];
@@ -134,7 +113,7 @@ const createPost = asyncHandler(async (req, res) => {
 	const { title, timeToRead, content } = req.body;
 
 	const imageLocalPath = req?.file?.path;
-	const tags = req.body.tags.split(',');
+	const tags = req.body.tags.split(",");
 
 	if (!imageLocalPath) {
 		throw new ApiError(400, "featuredImage is required");
@@ -151,7 +130,19 @@ const createPost = asyncHandler(async (req, res) => {
 		);
 	}
 
-	const existingPost = await Post.findOne({title});
+	// Generate initial slug
+	let slug = slugify(title, { lower: true, strict: true });
+
+	// Check if slug already exists and make it unique if necessary
+	let slugExists = await Post.findOne({ slug });
+	let counter = 1;
+	while (slugExists) {
+		slug = `${slug}-${Date.now()}-${counter}`;
+		slugExists = await Post.findOne({ slug });
+		counter++;
+	}
+
+	const existingPost = await Post.findOne({ title });
 
 	if (existingPost) {
 		throw new ApiError(400, "post with title already exists");
@@ -159,6 +150,7 @@ const createPost = asyncHandler(async (req, res) => {
 
 	const post = await Post.create({
 		title,
+		slug,
 		featuredImage: imageCloudUrl,
 		tags,
 		content,
@@ -182,27 +174,48 @@ const createPost = asyncHandler(async (req, res) => {
 const updatePostData = asyncHandler(async (req, res) => {
 	const { title, timeToRead, content } = req.body;
 
-	const tags = req.body.tags.split(',');
+	const tags = req?.body?.tags?.split(",");
 	const postId = req.params?.postId;
 
-	const post = await Post.findByIdAndUpdate(
-		postId,
-		{
-			...(title && { title }),
-			...(tags && { tags }),
-			...(timeToRead && { timeToRead }),
-			...(content && { content }),
-		},
-		{
-			new: true,
+	let updateData = {
+		...(timeToRead && { timeToRead }),
+		...(content && { content }),
+		...(tags && { tags }),
+	};
+
+	if (title) {
+		updateData.title = title;
+
+		// Generate new slug if title is updated
+		let newSlug = slugify(title, { lower: true, strict: true });
+
+		// Check if new slug already exists and make it unique if necessary
+		let slugExists = await Post.findOne({
+			slug: newSlug,
+			_id: { $ne: postId },
+		});
+		let counter = 1;
+		while (slugExists) {
+			newSlug = `${newSlug}-${Date.now()}-${counter}`;
+			slugExists = await Post.findOne({
+				slug: newSlug,
+				_id: { $ne: postId },
+			});
+			counter++;
 		}
-	);
+
+		updateData.slug = newSlug;
+	}
+
+	const post = await Post.findByIdAndUpdate(postId, updateData, {
+		new: true,
+	});
 
 	if (!post) {
 		throw new ApiError(404, "Post not found");
 	}
 
-	// Return updated user
+	// Return updated post
 	return res
 		.status(200)
 		.json(new ApiResponse(200, post, "Post updated successfully"));
@@ -260,7 +273,10 @@ const deletePost = asyncHandler(async (req, res) => {
 	const deletedPost = await Post.findByIdAndDelete(postId);
 
 	if (!deletedPost) {
-		throw new ApiError(500, "Post does not exist or Something went wrong while deleting the post");
+		throw new ApiError(
+			500,
+			"Post does not exist or Something went wrong while deleting the post"
+		);
 	}
 
 	return res
@@ -280,7 +296,8 @@ const searchPost = asyncHandler(async (req, res) => {
 			$match: {
 				$or: [
 					{ title: { $regex: searchString, $options: "i" } }, // Case-insensitive search in title
-					{ tags: { $regex: searchString, $options: "i" } },  // Case-insensitive search in tags
+					{ tags: { $regex: searchString, $options: "i" } }, // Case-insensitive search in tags
+					{ slug: { $regex: searchString, $options: "i" } },
 				],
 			},
 		});
@@ -307,7 +324,6 @@ const searchPost = asyncHandler(async (req, res) => {
 		.status(200)
 		.json(new ApiResponse(200, posts, "Fetched posts successfully"));
 });
-
 
 export {
 	allPosts,
