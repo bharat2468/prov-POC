@@ -10,6 +10,7 @@ import {
 	updateAvatar,
 	deleteUser,
 	allUsers,
+	googleAuthHandler,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import {
@@ -31,6 +32,8 @@ router
 router.route("/login").post(validate(loginSchema), loginUser);
 
 router.route("/logout").post(verifyJWT, logoutUser);	
+
+router.route("/google").post(googleAuthHandler);
 
 router.route("/delete").delete(verifyJWT,deleteUser)
 

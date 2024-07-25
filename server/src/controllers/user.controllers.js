@@ -7,6 +7,8 @@ import {
 	uploadOnCloudinary,
 } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
+import generatePassword from "generate-password";
 
 const generateAccessAndRefreshToken = async (id) => {
 	try {
@@ -25,6 +27,84 @@ const generateAccessAndRefreshToken = async (id) => {
 		);
 	}
 };
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const googleAuthHandler = asyncHandler(async (req, res) => {
+	const { token } = req.body;
+
+	if (!token) {
+		throw new ApiError(400, "Google token is required");
+	}
+
+	// Verify the Google token
+	const ticket = await client.verifyIdToken({
+		idToken: token,
+		audience: process.env.GOOGLE_CLIENT_ID,
+	});
+
+	const { email, picture } = ticket.getPayload();
+
+	// Check for existing user using email
+	let user = await User.findOne({ email: email.toLowerCase() });
+
+	if (!user) {
+		// Create a secure random password
+		const password = generatePassword.generate({
+			length: 12,
+			numbers: true,
+			symbols: true,
+			uppercase: true,
+			lowercase: true,
+			strict: true,
+		});
+
+		// Generate a unique username
+		let username = email.split("@")[0].toLowerCase();
+		let usernameExists = await User.findOne({ username });
+		while (usernameExists) {
+			username = username + Math.random().toString(36).slice(-4);
+			usernameExists = await User.findOne({ username });
+		}
+
+		// Create new user if doesn't exist
+		user = await User.create({
+			username,
+			email: email.toLowerCase(),
+			avatar: picture,
+			password
+		});
+	}
+
+	const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+		user._id
+	);
+
+	const options = {
+		httpOnly: true,
+		secure: true,
+	};
+
+	const userObject = user.toObject();
+	delete userObject.password;
+	delete userObject.refreshToken;
+
+	return res
+		.status(200)
+		.cookie("accessToken", accessToken, options)
+		.cookie("refreshToken", refreshToken, options)
+		.json(
+			new ApiResponse(
+				200,
+				{
+					user: userObject,
+					accessToken,
+					refreshToken,
+				},
+				"User authenticated successfully with Google"
+			)
+		);
+});
 
 const registerUser = asyncHandler(async (req, res) => {
 	// Get data from the request
@@ -45,7 +125,6 @@ const registerUser = asyncHandler(async (req, res) => {
 	// Handle avatar upload if present
 	let avatarCloudUrl = null;
 	const avatarLocalPath = req?.file?.path;
-
 
 	if (avatarLocalPath) {
 		const avatarCloudObject = await uploadOnCloudinary(avatarLocalPath);
@@ -404,4 +483,5 @@ export {
 	updateAvatar,
 	deleteUser,
 	allUsers,
+	googleAuthHandler,
 };

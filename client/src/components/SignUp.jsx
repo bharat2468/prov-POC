@@ -6,6 +6,7 @@ import { login as loginAction } from "../store/authSlice";
 import { Input, Logo } from "./index";
 import { signUp } from "../api/users";
 import { useMutation } from "@tanstack/react-query";
+import GoogleButton from "./GoogleButton";
 
 function Signup() {
 	const navigate = useNavigate();
@@ -171,6 +172,7 @@ function Signup() {
 							disabled={isLoading || registrationSuccess}>
 							{isLoading ? "Signing Up..." : "Sign Up"}
 						</button>
+						<GoogleButton isSignUp={true} />
 						{isError && (
 							<p className="text-error text-sm mt-2">
 								Signup failed:{" "}

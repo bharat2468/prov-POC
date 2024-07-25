@@ -8,6 +8,9 @@ const allUsers = async () => {
 	return await api.get("/users/all-users");
 };
 
+const googleAuth = async (token) => {
+	return await api.post("/users/google", {token});
+};
 
 const login = async (data) => {
 	return await api.post("/users/login", data);
@@ -44,4 +47,5 @@ export {
 	updateAvatar,
 	updateUserData,
 	changePassword,
+	googleAuth
 };

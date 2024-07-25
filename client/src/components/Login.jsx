@@ -6,6 +6,7 @@ import { login as loginAction } from '../store/authSlice';
 import {Input,Logo} from './index';
 import { useMutation } from "@tanstack/react-query";
 import { login } from "../api/users";
+import GoogleButton from './GoogleButton';
 
 function Login() {
 	const navigate = useNavigate();
@@ -122,6 +123,8 @@ function Login() {
 							disabled={isLoading}>
 							{isLoading ? "Signing In..." : "Sign In"}
 						</button>
+
+						<GoogleButton/>
 					</form>
 					{isError && (
 						<p className="text-error text-sm mt-2">
