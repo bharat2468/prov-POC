@@ -19,17 +19,17 @@ const Hero = () => {
                         <div className="grid gap-8 md:grid-cols-2 md:gap-12 lg:gap-16">
                             <div className="space-y-4 mt-20">
                                 <h1 className="text-4xl font-bold tracking-tight text-primary-foreground sm:text-5xl md:text-6xl lg:text-7xl">
-                                    Bharat's Blog
+                                    Project
                                 </h1>
                                 <p className="max-w-[700px] text-lg text-primary-foreground md:text-xl">
                                     Explore a world of insights, stories, and
-                                    perspectives from Bharat's diverse
+                                    perspectives from diverse
                                     experiences.
                                 </p>
                                 <Link
                                     to="/"
                                     className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-                                    Explore Blog
+                                    Explore Project
                                     <GoArrowRight />
                                 </Link>
                             </div>

@@ -23,7 +23,7 @@ const generateAccessAndRefreshToken = async (id) => {
 	} catch (error) {
 		throw new ApiError(
 			500,
-			"Something went wrong while generating Access and Refresh tokens"
+			error?.message || "Something went wrong while generating Access and Refresh tokens"
 		);
 	}
 };

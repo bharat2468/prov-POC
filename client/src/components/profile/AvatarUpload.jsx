@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
 import { updateAvatar } from "../../api/users";
+import { useSelector } from "react-redux";
 
-function AvatarUpload({ user }) {
-    const [Avatar, setAvatar] = useState(user?.avatar);
-
-    const { register, handleSubmit, formState: { errors },watch } = useForm();
-    const avatar = watch("avatar");
+function AvatarUpload() {
+    const avatar = useSelector((state) => state.auth.user?.avatar)
+    const queryClient = useQueryClient()
+    const { register, handleSubmit, formState: { errors } } = useForm();
 
     const { mutate, isLoading, isError, error } = useMutation({
         mutationFn: updateAvatar,
         onSuccess: (response) => {
-            console.log(response.data.data);
-            setAvatar(response.data.data.avatar);
+            console.log(response.data);
+            queryClient.invalidateQueries(['currentUser']);
         },
         onError: (error) => {
             console.error("Avatar update failed:", error);
@@ -21,9 +21,10 @@ function AvatarUpload({ user }) {
     });
 
     const onSubmit = (data) => {
-        console.log(data);
-        if (data) {
-            mutate(data);
+        if (data.avatar[0]) {
+            const formData = new FormData();
+            formData.append('avatar', data.avatar[0]);
+            mutate(formData);
         }
     };
 
@@ -32,7 +33,7 @@ function AvatarUpload({ user }) {
             <div className="avatar mb-4 max-w-[200px] my-5">
                 <div className="rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
                     <img
-                        src={Avatar || "https://img.daisyui.com/images/stock/photo-1567653418876-5bb0e566e1c2.webp"}
+                        src={avatar || "https://img.daisyui.com/images/stock/photo-1567653418876-5bb0e566e1c2.webp"}
                         alt="Avatar"
                     />
                 </div>

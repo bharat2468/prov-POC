@@ -4,6 +4,10 @@ const getCurrentUser = async () => {
 	return await api.get("/users/get-user");
 };
 
+const refreshToken = async () => {
+	return await api.post("/users/generate-token");
+};
+
 const allUsers = async () => {
 	return await api.get("/users/all-users");
 };
@@ -16,7 +20,7 @@ const login = async (data) => {
 	return await api.post("/users/login", data);
 };
 
-const logout = async (data) => {
+const logout = async () => {
 	return await api.post("/users/logout");
 };
 
@@ -29,8 +33,18 @@ const updateUserData = async (data) => {
 };
 
 const updateAvatar = async (data) => {
-	return await api.post("/users/update-avatar", data);
+	return await api.patch("/users/update-avatar", data, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
 };
+
+const deleteUser = async () => {
+    return await api.delete("/users/delete");
+
+};
+
 
 const changePassword = async (data) => {
 	return await api.post("/users/change-password", data);
@@ -40,6 +54,7 @@ const changePassword = async (data) => {
 
 export {
 	getCurrentUser,
+	refreshToken,
 	allUsers,
 	login,
 	logout,
@@ -47,5 +62,6 @@ export {
 	updateAvatar,
 	updateUserData,
 	changePassword,
-	googleAuth
+	googleAuth,
+	deleteUser
 };

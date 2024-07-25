@@ -17,20 +17,15 @@ function Header() {
             active: true,
         },
         {
-            name: "All Posts",
-            slug: "/all-posts",
-            active: authStatus,
-        },
-        {
-            name: "Add Post",
-            slug: "/add-update-post",
-            active: authStatus && isAdmin,
-        },
-        {
             name: "Admin Dashboard",
             slug: "/admin",
             active: authStatus && isAdmin,
         },
+        {
+            name:"Profile",
+            slug:"/profile",
+            active: authStatus
+        }
     ];
 
     const authButtons = [

@@ -8,11 +8,8 @@ import { store, persistor } from "./store/store.js";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
-	AddOrUpdatePost,
-	AllPost,
 	Home,
 	Login,
-	Post,
 	Signup,
 	Profile,
 } from "./pages/index.js";
@@ -22,11 +19,8 @@ import {
 	AdminDashboard,
 	Dashboard,
 	Users,
-	Posts,
-	Comments,
 	Protected,
 	Unauthorized,
-	Profile as ProfileAdmin,
 } from "./components/index.js";
 
 const queryClient = new QueryClient();
@@ -44,20 +38,8 @@ const nestedAdminRoute = {
 			element: <Dashboard />,
 		},
 		{
-			path: "profile",
-			element: <ProfileAdmin className="w-[60%] mx-auto" />,
-		},
-		{
 			path: "users",
 			element: <Users />,
-		},
-		{
-			path: "comments",
-			element: <Comments />,
-		},
-		{
-			path: "posts",
-			element: <Posts />,
 		},
 	],
 };
@@ -89,30 +71,6 @@ const router = createBrowserRouter([
 				element: (
 					<Protected authentication={false}>
 						<Signup />
-					</Protected>
-				),
-			},
-			{
-				path: "/add-update-post",
-				element: (
-					<Protected authentication={true} adminOnly={true}>
-						<AddOrUpdatePost />
-					</Protected>
-				),
-			},
-			{
-				path: "/all-posts",
-				element: (
-					<Protected authentication={true}>
-						<AllPost />
-					</Protected>
-				),
-			},
-			{
-				path: "/post/:slug",
-				element: (
-					<Protected authentication={true}>
-						<Post />
 					</Protected>
 				),
 			},

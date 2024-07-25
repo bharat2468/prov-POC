@@ -129,7 +129,7 @@ function Login() {
 					{isError && (
 						<p className="text-error text-sm mt-2">
 							Login failed:{" "}
-							{error.message ||
+							{error?.response.data.message ||
 								"Please check your credentials and try again."}
 						</p>
 					)}

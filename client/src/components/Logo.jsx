@@ -1,16 +1,9 @@
-/**
- * v0 by Vercel.
- * @see https://v0.dev/t/oUV4fm1tSpE
- * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
- */
-import { MountainIcon } from "./icons/icons";
 
 
 function Logo() {
 	return (
 		<div className="flex gap-1">
-			<MountainIcon className="w-6 h-6" />
-			<span>Bharat's Blog</span>
+			<span>Project</span>
 		</div>
 	);
 }
