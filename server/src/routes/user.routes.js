@@ -11,6 +11,7 @@ import {
 	deleteUser,
 	allUsers,
 	googleAuthHandler,
+	adminDeleteUser,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import {
@@ -36,6 +37,8 @@ router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/google").post(googleAuthHandler);
 
 router.route("/delete").delete(verifyJWT,deleteUser)
+
+router.route("/admin-delete/:userId").delete(verifyJWT,isAdmin,adminDeleteUser);
 
 router.route('/all-users').get(verifyJWT,isAdmin,allUsers);
 

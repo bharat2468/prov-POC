@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaCheck, FaTimes, FaTrash } from "react-icons/fa";
-import { allUsers } from "../../api/users";
-import { useQuery } from "@tanstack/react-query";
-import {Loading,Error} from "../index"
-import { format } from 'date-fns';
+import { allUsers, adminDeleteUser} from "../../api/users";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loading, Error } from "../index";
+import { format } from "date-fns";
 
 const Users = () => {
-	// Sample user data
+	const queryClient = useQueryClient();
+	const [successMessage, setSuccessMessage] = useState("");
 
 	const {
 		isLoading,
@@ -19,12 +20,24 @@ const Users = () => {
 		staleTime: 1000 * 60 * 5,
 	});
 
+	const { mutate: deleteProfile, isLoading: isDeleting } = useMutation({
+		mutationFn: adminDeleteUser,
+		onSuccess: () => {
+			queryClient.invalidateQueries(["all-users"]);
+			setSuccessMessage("User deleted successfully");
+			setTimeout(() => setSuccessMessage(""), 3000); // Clear message after 3 seconds
+		},
+		onError: (deleteError) => {
+			console.error(deleteError);
+		},
+	});
+
 	if (isLoading) {
-		return(
+		return (
 			<div className="w-full h-[80vh] flex justify-center items-center">
 				<Loading className="w-20" />
 			</div>
-		)
+		);
 	}
 
 	if (isError) {
@@ -32,17 +45,27 @@ const Users = () => {
 		return <Error />;
 	}
 
-
 	const users = response?.data?.data;
 
-	// Sample delete handler
 	const handleDelete = (userId) => {
-		console.log(`Delete user with ID: ${userId}`);
-		// Implement actual delete logic here
+		if (
+			window.confirm(
+				"Are you sure you want to delete this user? This action cannot be undone."
+			)
+		) {
+			deleteProfile(userId);
+		}
 	};
 
 	return (
 		<div className="overflow-x-auto">
+			{successMessage && (
+				<div className="alert alert-success my-5">
+					<div>
+						<span>{successMessage}</span>
+					</div>
+				</div>
+			)}
 			<table className="table rounded-md">
 				<thead>
 					<tr className="bg-base-200">
@@ -56,16 +79,18 @@ const Users = () => {
 				</thead>
 				<tbody>
 					{users.map((user) => (
-						<tr
-							key={user._id}
-                            className="hover"
-							>
-							<td>{format(new Date(user.createdAt), 'dd-MM-yyyy')}</td>
+						<tr key={user._id} className="hover">
+							<td>
+								{format(new Date(user.createdAt), "dd-MM-yyyy")}
+							</td>
 							<td>
 								<div className="avatar">
 									<div className="w-8 mask mask-squircle">
 										<img
-											src={user.avatar || "https://img.daisyui.com/images/stock/photo-1567653418876-5bb0e566e1c2.webp"}
+											src={
+												user.avatar ||
+												"https://img.daisyui.com/images/stock/photo-1567653418876-5bb0e566e1c2.webp"
+											}
 											alt={user.username}
 										/>
 									</div>
@@ -83,7 +108,8 @@ const Users = () => {
 							<td>
 								<button
 									className="btn btn-error btn-sm"
-									onClick={() => handleDelete(user.id)}>
+									onClick={() => handleDelete(user._id)}
+									disabled={isDeleting}>
 									<FaTrash />
 								</button>
 							</td>
