@@ -107,61 +107,71 @@ const googleAuthHandler = asyncHandler(async (req, res) => {
 });
 
 const registerUser = asyncHandler(async (req, res) => {
-	// Get data from the request
-	const { username, email, password } = req.body;
+    // Get data from the request
+    const { username, phone, email,password, gender, age, pincode, state,caste } = req.body;
 
-	// Check for existing user using username and email
-	const existingUser = await User.findOne({
-		$or: [
-			{ username: username.toLowerCase() },
-			{ email: email.toLowerCase() },
-		],
-	});
+    // Check for existing user using username and phone
+    const existingUser = await User.findOne({
+        $or: [
+            { username: username.toLowerCase() },
+            { phone: phone }
+        ],
+    });
 
-	if (existingUser) {
-		throw new ApiError(400, "User with username or email already exists");
-	}
+    if (existingUser) {
+        throw new ApiError(400, "User with username or phone already exists");
+    }
 
-	// Handle avatar upload if present
-	let avatarCloudUrl = null;
-	const avatarLocalPath = req?.file?.path;
+    // Handle avatar upload if present
+    let avatarCloudUrl = null;
+    const avatarLocalPath = req?.file?.path;
 
-	if (avatarLocalPath) {
-		const avatarCloudObject = await uploadOnCloudinary(avatarLocalPath);
-		avatarCloudUrl = avatarCloudObject?.url;
+    if (avatarLocalPath) {
+        const avatarCloudObject = await uploadOnCloudinary(avatarLocalPath);
+        avatarCloudUrl = avatarCloudObject?.url;
 
-		if (!avatarCloudUrl) {
-			throw new Error("Avatar upload failed");
-		}
-	}
+        if (!avatarCloudUrl) {
+            throw new Error("Avatar upload failed");
+        }
+    }
 
-	// Create new document in the database
-	const user = await User.create({
-		email: email.toLowerCase(),
-		password,
-		username: username.toLowerCase(),
-		avatar: avatarCloudUrl,
-	});
+    // Create new document in the database
+    const user = await User.create({
+        username: username.toLowerCase(),
+		email,
+        phone,
+        password,
+        avatar: avatarCloudUrl,
+        gender,
+        age,
+        pincode,
+        state,
+		caste,
+    });
 
-	// Check for the created user and exclude password and refreshToken
-	const createdUser = await User.findById(user._id).select(
-		"-password -refreshToken"
-	);
+    // Check for the created user and exclude password and refreshToken
+    const createdUser = await User.findById(user._id).select(
+        "-password -refreshToken"
+    );
 
-	if (!createdUser) {
-		throw new ApiError(
-			500,
-			"Something went wrong while registering the user in the database"
-		);
-	}
+    if (!createdUser) {
+        throw new ApiError(
+            500,
+            "Something went wrong while registering the user in the database"
+        );
+    }
 
-	// Return the data by removing sensitive fields
-	return res
-		.status(201)
-		.json(
-			new ApiResponse(201, createdUser, "User registered Successfully")
-		);
+    // Return the data by removing sensitive fields
+    return res
+        .status(201)
+        .json(
+            new ApiResponse(201, createdUser, "User registered Successfully")
+        );
 });
+
+
+
+
 
 const loginUser = asyncHandler(async (req, res) => {
 	// 1. take the data from the user

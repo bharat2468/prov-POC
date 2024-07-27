@@ -2,7 +2,6 @@ import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-
 const userSchema = new Schema(
 	{
 		username: {
@@ -21,7 +20,7 @@ const userSchema = new Schema(
 			trim: true,
 		},
 		avatar: {
-			type: String, // cloudinary url
+			type: String, // Cloudinary URL or similar
 		},
 		password: {
 			type: String,
@@ -29,13 +28,67 @@ const userSchema = new Schema(
 		},
 		refreshToken: {
 			type: String,
-			default:null
+			default: null,
 		},
-		role:{
-			type:String,
-			enum:['user','admin'],
-			default:'user'
-		}
+		role: {
+			type: String,
+			enum: ["admin", "user"],
+			default: "user",
+		},
+		gender: {
+			type: String,
+			enums:["male","female"],
+			required: true,
+		},
+		disabilityLevel: {
+			type: String,
+			default: null,
+		},
+		age: {
+			type: Number,
+			required: true,
+		},
+		income: {
+			type: Number,
+			default: 0,
+		},
+		phone: {
+			type: String,
+			required: true,
+			trim: true,
+		},
+		pincode: {
+			type: String,
+			required: true,
+			trim: true,
+		},
+		state: {
+			type: String,
+			required: true,
+			trim: true,
+		},
+		caste: {
+			type: String,
+			enum: ["General", "OBC", "SC", "ST", "Other"],
+			default: "General",
+		},
+		schemes: [{
+				schemeId: {
+					type: Schema.Types.ObjectId,
+					ref: "Scheme",
+					required: true,
+				},
+				status: {
+					type: String,
+					enum: ["docs collected", "in progress", "done"],
+					default: "docs collected",
+				},
+				applicationDate: {
+					type: Date,
+					default: Date.now,
+				},
+			},
+		]
 	},
 	{
 		timestamps: true,

@@ -13,6 +13,7 @@ import {
 	googleAuthHandler,
 	adminDeleteUser,
 } from "../controllers/user.controllers.js";
+import { approvedWorkers,notApprovedWorkers } from "../controllers/worker.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import {
 	registrationSchema,
@@ -58,4 +59,11 @@ router
 	.route("/update-avatar")
 	.patch(verifyJWT, upload.single("avatar"), updateAvatar);
 
+
+router.route("/approved").get(verifyJWT,isAdmin,approvedWorkers);
+
+router.route("/not-approved").get(verifyJWT,isAdmin,notApprovedWorkers)
+
 export default router;
+
+
