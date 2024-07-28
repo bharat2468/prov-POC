@@ -9,6 +9,7 @@ import {
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import generatePassword from "generate-password";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken = async (id) => {
 	try {
@@ -496,6 +497,57 @@ const updateAvatar = asyncHandler(async (req, res) => {
 		.json(new ApiResponse(200, user, "avatar changed successfully"));
 });
 
+
+const getUserSchemes = asyncHandler(async (req, res) => {
+	const { id } = req.params;
+
+	// Validate user ID
+	if (!id) {
+		throw new ApiError(400, 'User ID is required');
+	}
+
+	console.log(id);
+	// Fetch user details along with their schemes using aggregation
+	const userSchemes = await User.aggregate([
+		{
+			$match: { _id: new mongoose.Types.ObjectId(id) }
+		},
+		{
+			$unwind: "$schemes"
+		},
+		{
+			$lookup: {
+				from: "schemes",
+				localField: "schemes.schemeId",
+				foreignField: "_id",
+				as: "schemeDetails"
+			}
+		},
+		{
+			$unwind: "$schemeDetails"
+		},
+		// {
+		// 	$project: {
+		// 		_id: 0,
+		// 		schemeId: "$schemeDetails._id",
+		// 		name: "$schemeDetails.name",
+		// 		description: "$schemeDetails.description",
+		// 		department: "$schemeDetails.department",
+		// 		tags: "$schemeDetails.tags",
+		// 		docsReq: "$schemeDetails.docsReq",
+		// 		status: "$schemes.status",
+		// 		applicationDate: "$schemes.applicationDate",
+		// 		notes: "$schemes.notes"
+		// 	}
+		// }
+	]);
+
+
+	return res.status(200).json(new ApiResponse(200, userSchemes, "User schemes fetched successfully"));
+});
+
+
+
 export {
 	registerUser,
 	loginUser,
@@ -508,5 +560,6 @@ export {
 	deleteUser,
 	allUsers,
 	googleAuthHandler,
-	adminDeleteUser
+	adminDeleteUser,
+	getUserSchemes
 };

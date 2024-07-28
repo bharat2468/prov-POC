@@ -4,7 +4,7 @@ import { User } from "../models/user.models.js";
 import {Scheme} from "../models/scheme.models.js"
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken = async (id) => {
 	try {
@@ -343,6 +343,86 @@ const addSchemeToUser = asyncHandler(async (req, res) => {
 });
 
 
+const getWorkerUsers = asyncHandler(async (req, res) => {
+	// Extract worker ID from request parameters
+	const workerId = req.params.id || req.worker._id;
+
+	// Check if the worker exists
+	const workerExists = await Worker.findById(workerId);
+	if (!workerExists) {
+		throw new ApiError(404, "Worker not found");
+	}
+
+	// Perform aggregation pipeline
+	const workerUsers = await Worker.aggregate([
+		{
+			$match: { _id: new mongoose.Types.ObjectId(workerId) }
+		},
+		{
+			$unwind: "$users"
+		},
+		{
+			$lookup: {
+				from: "users",
+				localField: "users",
+				foreignField: "_id",
+				as: "userDetails"
+			}
+		},
+		{
+			$unwind: "$userDetails"
+		},
+		{
+			$project: {
+				_id: "$userDetails._id",
+				name: "$userDetails.fullname",
+				username: "$userDetails.username",
+				age: "$userDetails.age",
+				schemesCount: { $size: "$userDetails.schemes" }
+			}
+		}
+	]);
+
+	// Return the results
+	return res
+		.status(200)
+		.json(new ApiResponse(200, workerUsers, "User details fetched successfully"));
+});
+
+
+
+const getAllWorkers = asyncHandler(async (req, res) => {
+	// Fetch all workers with selected fields
+    console.log("bharat")
+	const workers = await Worker.find({});
+
+	if (!workers.length) {
+		return res.status(200).json(new ApiResponse(200, [], "No workers found"));
+	}
+
+	return res
+		.status(200)
+		.json(new ApiResponse(200, workers, "All workers fetched successfully"));
+});
+
+
+const getWorkerById = asyncHandler(async (req, res) => {
+	// Extract worker ID from request parameters
+	const workerId = req.params.id;
+
+	// Fetch the worker details by ID
+	const worker = await Worker.findById(workerId, 'fullname phone email isApproved');
+
+	if (!worker) {
+		throw new ApiError(404, "Worker not found");
+	}
+
+	return res
+		.status(200)
+		.json(new ApiResponse(200, worker, "Worker details fetched successfully"));
+});
+
+
 
 export {
 	addUser,
@@ -353,5 +433,8 @@ export {
     addSchemeToUser,
     notApprovedWorkers,
     approvedWorkers,
-    getNearestWorker
+    getNearestWorker,
+    getWorkerUsers,
+    getAllWorkers,
+    getWorkerById
 };

@@ -12,6 +12,7 @@ import {
 	allUsers,
 	googleAuthHandler,
 	adminDeleteUser,
+	getUserSchemes,
 } from "../controllers/user.controllers.js";
 import { approvedWorkers,notApprovedWorkers } from "../controllers/worker.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -24,6 +25,7 @@ import {
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { isAdmin } from "../middlewares/admin.midleware.js";
+import { verifyWorkerJWT } from "../middlewares/workerAuth.middleware.js";
 
 const router = Router();
 
@@ -63,6 +65,8 @@ router
 router.route("/approved").get(verifyJWT,isAdmin,approvedWorkers);
 
 router.route("/not-approved").get(verifyJWT,isAdmin,notApprovedWorkers)
+
+router.route("/user-schemes/:id").get(verifyWorkerJWT,getUserSchemes);
 
 export default router;
 
