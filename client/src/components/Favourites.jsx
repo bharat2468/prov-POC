@@ -1,19 +1,22 @@
 import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchFavoriteCryptos } from "../store/cryptoSlice";
+import { useRecoilState, useRecoilCallback } from "recoil";
+import { cryptoAtoms } from "../recoil/atoms/cryptoAtoms";
+import { fetchFavoriteCryptos } from "../recoil/callbacks/cryptoCallbacks";
 import { Loading } from "./";
 
 const Favorites = () => {
-  const dispatch = useDispatch();
-  const { favorites, favoriteData, loading, error } = useSelector(
-    (state) => state.crypto
-  );
+  const [cryptoState] = useRecoilState(cryptoAtoms);
+  const { favorites, favoriteData, loading, error } = cryptoState;
+
+  const loadFavorites = useRecoilCallback(({ set, snapshot }) => () => {
+    fetchFavoriteCryptos({ set, snapshot });
+  }, []);
 
   useEffect(() => {
     if (favorites.length > 0) {
-      dispatch(fetchFavoriteCryptos(favorites));
+      loadFavorites();
     }
-  }, [dispatch, favorites]);
+  }, [favorites, loadFavorites]);
 
   if (loading) {
     return (

@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { toggleTheme } from "../../store/uiSlice";
-
+import { toggleTheme } from "../../recoil/callbacks/uiCallbacks";
+import { uiAtoms } from "../../recoil/atoms/uiAtoms";
+import { useRecoilValue,useRecoilCallback } from "recoil";
 const ThemeToggle = () => {
-	const dispatch = useDispatch();
+	const { theme } = useRecoilValue(uiAtoms);
 
-	const theme = useSelector((state) => state.ui.theme);
+	const handleToggle = useRecoilCallback(
+		({ set, snapshot }) =>
+			() => {
+				toggleTheme({ set, snapshot });
+			},
+		[]
+	);
 
 	useEffect(() => {
 		document.documentElement.setAttribute("data-theme", theme);
@@ -14,7 +20,7 @@ const ThemeToggle = () => {
 	return (
 		<label className="cursor-pointer grid place-items-center">
 			<input
-				onClick={() => dispatch(toggleTheme())}
+				onClick={handleToggle}
 				type="checkbox"
 				defaultChecked={theme === "dark"}
 				className="toggle bg-base-content row-start-1 col-start-1 col-span-2"

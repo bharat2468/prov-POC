@@ -23,7 +23,7 @@ const persistConfig = {
 };
 
 const rootReducer = combineReducers({
-	ui: uiReducer,
+	// ui: uiReducer,
 	// crypto: cryptoReducer, // ✅ Add crypto slice here
 });
 

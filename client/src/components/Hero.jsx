@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { GoArrowRight } from "react-icons/go";
 import Container from "./Container";
-import { useSelector } from "react-redux";
 import lightImage from '/hero-bg-light.jpg';
 import darkImage from '/hero-bg-dark.jpg';
+import { uiAtoms } from "../recoil/atoms/uiAtoms";
+import { useRecoilValue } from "recoil";
 
 const Hero = () => {
-    const theme = useSelector((state) => state.ui.theme);
+    const { theme } = useRecoilValue(uiAtoms);
     const image = theme === "light" ? lightImage : darkImage;
 
     return (

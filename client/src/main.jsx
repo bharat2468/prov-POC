@@ -2,9 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "./store/store.js";
+// import { Provider } from "react-redux";
+// import { PersistGate } from "redux-persist/integration/react";
+// import { store, persistor } from "./store/store.js";
 import {
 	CryptoPage,
 	Home,
@@ -12,7 +12,7 @@ import {
 	FavouritesPage,
 } from "./pages/index.js";
 import { RecoilRoot } from "recoil";
-import { RecoilizeDebugger } from "recoilize";
+import RecoilizeDebugger from 'recoilize';
 
 const router = createBrowserRouter([
 	{
@@ -44,11 +44,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 	<React.StrictMode>
 		<RecoilRoot>
 			<RecoilizeDebugger />
-			<Provider store={store}>
-				<PersistGate loading={null} persistor={persistor}>
+			{/* <Provider store={store}> */}
+				{/* <PersistGate loading={null} persistor={persistor}> */}
 					<RouterProvider router={router} />
-				</PersistGate>
-			</Provider>
+				{/* </PersistGate> */}
+			{/* </Provider> */}
 		</RecoilRoot>
 	</React.StrictMode>
 );

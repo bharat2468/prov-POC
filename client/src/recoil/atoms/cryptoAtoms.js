@@ -1,7 +1,14 @@
-import { atom } from 'recoil';
+// recoil/atoms/cryptoAtoms.js
+import { atom } from "recoil";
+import { recoilPersist } from "recoil-persist";
 
-export const cryptoState = atom({
-  key: 'cryptoState',
+const { persistAtom } = recoilPersist({
+  key: "crypto-storage", // key in localStorage
+  storage: localStorage, // or sessionStorage
+});
+
+export const cryptoAtoms = atom({
+  key: "cryptoAtoms",
   default: {
     data: [],
     allCryptos: [],
@@ -10,4 +17,5 @@ export const cryptoState = atom({
     loading: false,
     error: null,
   },
+  effects_UNSTABLE: [persistAtom],
 });

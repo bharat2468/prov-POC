@@ -1,67 +1,80 @@
-import { selector } from 'recoil';
-import { cryptoState } from '../atoms/cryptoAtoms';
 import { getAllCryptoData, getCryptoData } from '../../api/cryptoApi';
+import { cryptoAtoms } from '../atoms/cryptoAtoms';
 
-// Selector to fetch all cryptos (replaces fetchAllCryptos thunk)
-export const fetchAllCryptosSelector = selector({
-  key: 'fetchAllCryptosSelector',
-  get: async ({ get }) => {
-    try {
-      const response = await getAllCryptoData();
-      return response.data.result;
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  },
-});
-
-// Selector to fetch cryptos by symbols (replaces fetchCryptos thunk)
-export const fetchCryptosSelector = selector({
-  key: 'fetchCryptosSelector',
-  get: async ({ get }) => {
-    const { data } = get(cryptoState);
-    if (!data || data.length === 0) return [];
-    try {
-      const response = await getCryptoData(data.join('+'));
-      return response.data.symbols;
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  },
-});
-
-// Selector to fetch favorite cryptos (replaces fetchFavoriteCryptos thunk)
-export const fetchFavoriteCryptosSelector = selector({
-  key: 'fetchFavoriteCryptosSelector',
-  get: async ({ get }) => {
-    const { favorites } = get(cryptoState);
-    if (!favorites || favorites.length === 0) return [];
-    try {
-      const response = await getCryptoData(favorites.join('+'));
-      return response.data.symbols;
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  },
-});
-
-
-// Add to favorites
-export const addToFavorites = ({ set, get }, symbol) => {
-  const state = get(cryptoState);
-  if (!state.favorites.includes(symbol)) {
-    set(cryptoState, {
-      ...state,
-      favorites: [...state.favorites, symbol],
-    });
+export const fetchAllCryptos = async ({ set }) => {
+  set(cryptoAtoms, (prev) => ({ ...prev, loading: true, error: null }));
+  try {
+    const response = await getAllCryptoData();
+    set(cryptoAtoms, (prev) => ({
+      ...prev,
+      allCryptos: response.data.result,
+      loading: false,
+    }));
+  } catch (error) {
+    set(cryptoAtoms, (prev) => ({
+      ...prev,
+      loading: false,
+      error: error.message,
+    }));
   }
 };
 
-// Remove from favorites
-export const removeFromFavorites = ({ set, get }, symbol) => {
-  const state = get(cryptoState);
-  set(cryptoState, {
-    ...state,
-    favorites: state.favorites.filter((s) => s !== symbol),
-  });
+export const fetchFavoriteCryptos = async ({ snapshot, set }) => {
+  const { favorites } = await snapshot.getPromise(cryptoAtoms);
+  if (favorites.length === 0) return;
+
+  set(cryptoAtoms, (prev) => ({ ...prev, loading: true, error: null }));
+  try {
+    const response = await getCryptoData(favorites.join('+'));
+    set(cryptoAtoms, (prev) => ({
+      ...prev,
+      favoriteData: response.data.symbols,
+      loading: false,
+    }));
+  } catch (error) {
+    set(cryptoAtoms, (prev) => ({
+      ...prev,
+      loading: false,
+      error: error.message,
+    }));
+  }
+};
+
+// ✅ NEW: fetchCryptos by symbols
+export const fetchCryptos = async ({ set }, symbols) => {
+  if (!symbols || symbols.length === 0) return;
+
+  set(cryptoAtoms, (prev) => ({ ...prev, loading: true, error: null }));
+  try {
+    const response = await getCryptoData(symbols.join('+'));
+    set(cryptoAtoms, (prev) => ({
+      ...prev,
+      data: response.data.symbols,
+      loading: false,
+    }));
+  } catch (error) {
+    set(cryptoAtoms, (prev) => ({
+      ...prev,
+      loading: false,
+      error: error.message,
+    }));
+  }
+};
+
+export const addToFavorites = async ({ set, snapshot }, symbol) => {
+  const { favorites } = await snapshot.getPromise(cryptoAtoms);
+  if (!favorites.includes(symbol)) {
+    set(cryptoAtoms, (prev) => ({
+      ...prev,
+      favorites: [...prev.favorites, symbol],
+    }));
+  }
+};
+
+export const removeFromFavorites = async ({ set, snapshot }, symbol) => {
+  const { favorites } = await snapshot.getPromise(cryptoAtoms);
+  set(cryptoAtoms, (prev) => ({
+    ...prev,
+    favorites: favorites.filter((s) => s !== symbol),
+  }));
 };
