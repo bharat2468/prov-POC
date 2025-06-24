@@ -69,29 +69,38 @@ const AllCryptoList = () => {
 						</tr>
 					</thead>
 					<tbody>
-						{allCryptos.slice(0, 30).map((coin, index) => (
-							<tr key={coin.symbol}>
-								<th>{index + 1}</th>
-								<td>{coin.symbol}</td>
-								<td>{coin.name || "—"}</td>
-								<td>{coin.source}</td>
-								<td>
-									<button
-										className={`btn btn-sm ${
-											isFavorite(coin.symbol)
-												? "btn-error"
-												: "btn-success"
-										}`}
-										onClick={() =>
-											handleFavoriteToggle(coin.symbol)
-										}>
-										{isFavorite(coin.symbol)
-											? "Remove"
-											: "Add"}
-									</button>
-								</td>
-							</tr>
-						))}
+						{!Array.isArray(allCryptos) ||
+						allCryptos.length === 0 ? (
+							<div className="text-center text-gray-500 mt-4">
+								No cryptocurrencies found.
+							</div>
+						) : (
+							allCryptos.slice(0, 30).map((coin, index) => (
+								<tr key={coin.symbol}>
+									<th>{index + 1}</th>
+									<td>{coin.symbol}</td>
+									<td>{coin.name || "—"}</td>
+									<td>{coin.source}</td>
+									<td>
+										<button
+											className={`btn btn-sm ${
+												isFavorite(coin.symbol)
+													? "btn-error"
+													: "btn-success"
+											}`}
+											onClick={() =>
+												handleFavoriteToggle(
+													coin.symbol
+												)
+											}>
+											{isFavorite(coin.symbol)
+												? "Remove"
+												: "Add"}
+										</button>
+									</td>
+								</tr>
+							))
+						)}
 					</tbody>
 				</table>
 			</div>
