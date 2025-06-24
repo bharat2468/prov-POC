@@ -1,23 +1,24 @@
 import axios from "axios";
 
-
 const api = axios.create({
-    baseURL: "http://localhost:8000/api/v1",
+    baseURL: "/api",
     timeout: 5000,
     headers: {
         "Content-Type": "application/json",
     },
-	withCredentials: true
+    withCredentials: true
 });
 
 // Request interceptor
 api.interceptors.request.use(
     (config) => {
-        // You can modify the request config here if needed
+        const token = "vdys6hr4a3z2eb6sh57o";
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
         return config;
     },
     (error) => {
-        // Log the request if there's an error
         console.log('Request error:', error.request);
         return Promise.reject(error);
     }
@@ -25,12 +26,8 @@ api.interceptors.request.use(
 
 // Response interceptor
 api.interceptors.response.use(
-    (response) => {
-        // You can modify the response data here if needed
-        return response;
-    },
+    (response) => response,
     (error) => {
-        // Log the response data if there's an error
         if (error.response) {
             console.log('Response error:', error.response.data);
         } else {

@@ -13,19 +13,11 @@ const uiSlice = createSlice({
 		toggleTheme: (state) => {
 			state.theme = (state.theme === "light") ? "dark" : "light";
 		},
-		openModal: (state, action) => {
-			state.activeModal = action.payload;
-		},
-		closeModal: (state) => {
-			state.activeModal = null;
-		},
 	},
 });
 
 export const {
 	toggleTheme,
-	openModal,
-	closeModal,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

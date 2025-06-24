@@ -13,7 +13,7 @@ const allUsers = async () => {
 };
 
 const googleAuth = async (token) => {
-	return await api.post("/users/google", {token});
+	return await api.post("/users/google", { token });
 };
 
 const login = async (data) => {
@@ -34,19 +34,19 @@ const updateUserData = async (data) => {
 
 const updateAvatar = async (data) => {
 	return await api.patch("/users/update-avatar", data, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    });
+		headers: {
+			'Content-Type': 'multipart/form-data'
+		}
+	});
 };
 
 const deleteUser = async () => {
-    return await api.delete("/users/delete");
+	return await api.delete("/users/delete");
 
 };
 
 const adminDeleteUser = async (id) => {
-    return await api.delete(`/users/admin-delete/${id}`);
+	return await api.delete(`/users/admin-delete/${id}`);
 
 };
 

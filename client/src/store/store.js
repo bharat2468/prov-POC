@@ -1,4 +1,3 @@
-// store.js
 import { configureStore } from "@reduxjs/toolkit";
 import {
 	persistStore,
@@ -13,19 +12,19 @@ import {
 import storage from "redux-persist/lib/storage";
 import { combineReducers } from "redux";
 
-import authReducer from "./authSlice"
-import uiReducer from "./uiSlice"
+import uiReducer from "./uiSlice";
+// import cryptoReducer from "./cryptoSlice"; // ✅ Import your crypto slice
 
 const persistConfig = {
 	key: "root",
 	version: 1,
 	storage,
-	whitelist: ["auth", "ui"], // only persist auth and ui
+	whitelist: ["ui"], // only persist ui
 };
 
 const rootReducer = combineReducers({
-	auth: authReducer,
 	ui: uiReducer,
+	// crypto: cryptoReducer, // ✅ Add crypto slice here
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

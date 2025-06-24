@@ -5,44 +5,14 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "./store/store.js";
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
+	CryptoPage,
 	Home,
-	Login,
-	Signup,
-	Profile,
+	AllCryptoPage,
+	FavouritesPage,
 } from "./pages/index.js";
-import { GoogleOAuthProvider } from "@react-oauth/google";
-import {
-	Error,
-	AdminDashboard,
-	Dashboard,
-	Users,
-	Protected,
-	Unauthorized,
-} from "./components/index.js";
-
-const queryClient = new QueryClient();
-
-const nestedAdminRoute = {
-	path: "admin",
-	element: (
-		<Protected authentication={true} adminOnly={true}>
-			<AdminDashboard />
-		</Protected>
-	),
-	children: [
-		{
-			index: true,
-			element: <Dashboard />,
-		},
-		{
-			path: "users",
-			element: <Users />,
-		},
-	],
-};
+import { RecoilRoot } from "recoil";
+import { RecoilizeDebugger } from "recoilize";
 
 const router = createBrowserRouter([
 	{
@@ -51,57 +21,34 @@ const router = createBrowserRouter([
 		errorElement: <Error />,
 		children: [
 			{
-				path: "/unauthorized",
-				element: <Unauthorized />,
-			},
-			{
 				path: "/",
 				element: <Home />,
 			},
 			{
-				path: "/login",
-				element: (
-					<Protected authentication={false}>
-						<Login />
-					</Protected>
-				),
+				path: "/some",
+				element: <CryptoPage />,
 			},
 			{
-				path: "/signup",
-				element: (
-					<Protected authentication={false}>
-						<Signup />
-					</Protected>
-				),
+				path: "/all",
+				element: <AllCryptoPage />,
 			},
 			{
-				path: "/profile",
-				element: (
-					<Protected authentication={true}>
-						<Profile />
-					</Protected>
-				),
+				path: "/favourites",
+				element: <FavouritesPage />,
 			},
-
-			nestedAdminRoute,
 		],
 	},
 ]);
 
-const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-
 ReactDOM.createRoot(document.getElementById("root")).render(
 	<React.StrictMode>
-		<Provider store={store}>
-			<PersistGate loading={null} persistor={persistor}>
-				<QueryClientProvider client={queryClient}>
-					<GoogleOAuthProvider clientId={clientId}>
-						<RouterProvider router={router} />
-					</GoogleOAuthProvider>
-					<ReactQueryDevtools initialIsOpen={false} />
-				</QueryClientProvider>
-			</PersistGate>
-		</Provider>
+		<RecoilRoot>
+			<RecoilizeDebugger />
+			<Provider store={store}>
+				<PersistGate loading={null} persistor={persistor}>
+					<RouterProvider router={router} />
+				</PersistGate>
+			</Provider>
+		</RecoilRoot>
 	</React.StrictMode>
 );

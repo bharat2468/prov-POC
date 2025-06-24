@@ -1,11 +1,11 @@
 import Home from "./Home";
-import Login from "./Login";
-import Signup from "./SignUp";
-import Profile from "./Profile";
+import CryptoPage from "./CryptoPage";
+import AllCryptoPage from "./AllCryptoPage";
+import FavouritesPage from "./FavouritesPage";
 
 export {
     Home,
-    Login,
-    Signup,
-    Profile
+    CryptoPage,
+    AllCryptoPage,
+    FavouritesPage
 }
