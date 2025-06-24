@@ -7,7 +7,7 @@ export const fetchAllCryptos = async ({ set }) => {
     const response = await getAllCryptoData();
     set(cryptoAtoms, (prev) => ({
       ...prev,
-      allCryptos: response.data.result,
+      allCryptos: response?.data?.result,
       loading: false,
     }));
   } catch (error) {
@@ -28,7 +28,7 @@ export const fetchFavoriteCryptos = async ({ snapshot, set }) => {
     const response = await getCryptoData(favorites.join('+'));
     set(cryptoAtoms, (prev) => ({
       ...prev,
-      favoriteData: response.data.symbols,
+      favoriteData: response?.data?.symbols,
       loading: false,
     }));
   } catch (error) {
@@ -49,7 +49,7 @@ export const fetchCryptos = async ({ set }, symbols) => {
     const response = await getCryptoData(symbols.join('+'));
     set(cryptoAtoms, (prev) => ({
       ...prev,
-      data: response.data.symbols,
+      data: response?.data?.symbols,
       loading: false,
     }));
   } catch (error) {
